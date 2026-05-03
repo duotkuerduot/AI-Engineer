@@ -1,0 +1,58 @@
+You are an expert ML engineer and teacher. Produce a complete, end-to-end PyTorch project for **detecting mastitis in dairy cows** using the Kaggle dataset at:
+https://www.kaggle.com/datasets/sivaprathishsiva/mastitis-disease-detection. :contentReference[oaicite:2]{index=2}
+
+Requirements & expectations:
+1. **Project goal & scope**  
+   - Binary classification: mastitis vs healthy (or multi-class if dataset has multiple labels).  
+   - Write clear assumptions about label names, folder layout, and any missing metadata.
+2. **Code quality**  
+   - All code must be in **plain PyTorch** (no PyTorch Lightning) and runnable.  
+   - Adhere to the *Zen of Python* (readability, explicitness, simplicity). Add a short comment at the top of each file stating which Zen principles that file follows.  
+   - Use modular structure (suggested packages/files below). Each function/class must have a concise docstring and inline comments where non-obvious logic is used.
+3. **Project structure (create these files and fill them)**  
+   - `README.md` (how to reproduce, dataset link, expected results)  
+   - `requirements.txt` (pinned versions)  
+   - `configs/config.yaml` (all hyperparams, seed, paths)  
+   - `src/data.py` — dataset class(s), transformations, train/val/test split code, imbalance handling (class weights, oversampling or focal loss example)  
+   - `src/models.py` — model factory with at least two choices (ResNet50 pretrained, EfficientNetB3 pretrained). Provide clear lines to switch models.  
+   - `src/train.py` — training loop with gradient clipping, learning rate scheduler, mixed precision (AMP) option, checkpoint saving, logging.  
+   - `src/eval.py` — evaluation metrics (accuracy, precision, recall, F1, ROC AUC), confusion matrix, per-class reports, test-time augmentation (TTA) example.  
+   - `src/utils.py` — helper utilities: seeding, device management, model saving/loading, deterministic cudnn settings.  
+   - `src/interpretability.py` — Grad-CAM heatmaps, example visualizations to explain predictions.  
+   - `deploy/fastapi_app.py` — small example showing how to serve the trained model (inference endpoint) and how to export with `torchscript`.  
+   - `notebooks/eda.ipynb` — short EDA showing class balance, sample images, basic augmentation effects.
+4. **Data handling**  
+   - Code to programmatically detect dataset layout after the user downloads and unzips the Kaggle dataset. Use environment variable `DATA_DIR` or `--data-dir` CLI flag as fallback. Show a short helper to download dataset using the Kaggle CLI (commented) if user provides credentials.
+   - Robust image loading that tolerates corrupted images.
+   - Use `albumentations` for augmentations; show separate augment pipelines for train / val / test.
+5. **Training specifics**  
+   - Use transfer learning: freeze backbone initially then unfreeze last N layers; show example schedule.  
+   - Use AdamW optimizer and a cosine annealing scheduler with warmup. Provide alternative configs for SGD with momentum.  
+   - Include example of handling class imbalance: class weights in loss, `WeightedRandomSampler`, and focal loss implementation (brief).  
+   - Add early stopping and best-model checkpointing based on validation F1 score.
+6. **Evaluation & reporting**  
+   - Produce per-epoch logs, save best model, and produce a final evaluation report (CSV) with predicted probabilities, predicted label, true label, confidence, and Grad-CAM image paths for false positives/negatives.  
+   - Plot (matplotlib) training curves (loss, accuracy, F1) and confusion matrix. (Do not set colors explicitly.)
+7. **Reproducibility & experiments**  
+   - Use deterministic seeding utilities, show how to set `torch.manual_seed`, `np.random.seed`, `random.seed` and deterministic cudnn fallback.  
+   - Provide a minimal `run_experiment.sh` showing a reproducible run command that loads `configs/config.yaml`.
+8. **Hardware & performance**  
+   - Make training loop GPU-aware and include an easy switch to single-GPU vs multi-GPU `torch.nn.DataParallel` example. (Note: mention that `DistributedDataParallel` is preferable for production and give a short snippet but keep primary code single-GPU friendly.)
+9. **Documentation & comments**  
+   - Each code file must start with a 2–4 line header explaining purpose, expected inputs/outputs, and which Zen of Python principles it follows.  
+   - Inline comments to explain nontrivial lines; docstrings for all classes/functions.  
+10. **Extras (nice-to-have)**  
+    - Optional: small unit tests (pytest) for data loader and model forward pass (mock inputs).  
+    - Optional: a short suggested hyperparameter tuning plan and which parameters to sweep (learning rate, weight decay, augmentation intensity, backbone choice).
+11. **Deliverables**  
+    - Provide the full code for each file listed above (complete, not stubbed).  
+    - Provide concise `README.md` content that explains how to reproduce the results locally (download dataset, create venv, install, run training, evaluate, and run the FastAPI inference server).  
+    - Provide sample output expected after training (example metrics and a short CSV snippet).
+12. **Assumptions the model can make if dataset details are unclear**  
+    - If the dataset is organized into `train/healthy/` and `train/mastitis/` use that layout; if labels are in a CSV, load them and show how to map filenames to labels. State whichever assumption you made at the top of your code and include instructions how to change it.
+
+Important: whenever you reference third-party packages or papers/approaches (e.g., Grad-CAM, EfficientNet), include a short one-line explanation and at least one web reference (link or citation) in the `README.md`.
+
+Finally, after producing the code, provide a **short checklist** (5 items) that I can run immediately after downloading the Kaggle dataset to confirm everything is wired correctly (e.g., `python -c "from src.data import ..."` style quick checks).
+
+Do not ask me for clarifications — make reasonable assumptions when necessary, explicitly state them, and implement the project using those assumptions.
